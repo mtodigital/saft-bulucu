@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Şaft Bulucu - SaftMarketim</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #fff;
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+        
+        .finder-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .step {
+            margin-bottom: 20px;
+        }
+        
+        .step-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: #e74c3c;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .step-number.done {
+            background: #27ae60;
+        }
+        
+        .step-title {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+        
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+        
+        select:disabled {
+            background-color: #f1f5f9;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .btn-search {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(231, 76, 60, 0.3);
+        }
+        
+        .btn-search:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result-box {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 12px;
+            display: none;
+        }
+        
+        .result-box.found {
+            display: block;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 2px solid #27ae60;
+        }
+        
+        .result-box.not-found {
+            display: block;
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+            border: 2px solid #f39c12;
+        }
+        
+        .result-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .result-found .result-title {
+            color: #155724;
+        }
+        
+        .result-not-found .result-title {
+            color: #856404;
+        }
+        
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .result-item {
+            background: rgba(255,255,255,0.7);
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .result-item.full {
+            grid-column: span 2;
+        }
+        
+        .result-item label {
+            font-size: 12px;
+            color: #666;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .result-item span {
+            font-weight: 600;
+            color: #1a1a2e;
+            font-size: 15px;
+        }
+        
+        .result-item.oe span {
+            color: #e74c3c;
+            font-size: 18px;
+            font-family: monospace;
+        }
+        
+        .contact-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .contact-btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-whatsapp {
+            background: #25d366;
+            color: #fff;
+        }
+        
+        .btn-whatsapp:hover {
+            background: #128c7e;
+        }
+        
+        .btn-phone {
+            background: #3498db;
+            color: #fff;
+        }
+        
+        .btn-phone:hover {
+            background: #2980b9;
+        }
+        
+        .stats {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        .reset-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: underline;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 600px) {
+            .result-details {
+                grid-template-columns: 1fr;
+            }
+            .result-item.full {
+                grid-column: span 1;
+            }
+            .contact-buttons {
+                flex-direction: column;
+            }
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Şaft Bulucu</h1>
+            <p>Aracınıza uygun şaftı 4 adımda bulun</p>
+        </div>
+        
+        <div class="finder-box">
+            <div class="step">
+                <div class="step-label">
+                    <span class="step-number" id="step1-num">1</span>
+                    <span class="step-title">Marka Seçin</span>
+                </div>
+                <select id="marka" onchange="onMarkaChange()">
+                    <option value="">-- Marka Seçin --</option>
+                </select>
+            </div>
+            
+            <div class="step">
+                <div class="step-label">
+                    <span class="step-number" id="step2-num">2</span>
+                    <span class="step-title">Model Seçin</span>
+                </div>
+                <select id="model" onchange="onModelChange()" disabled>
+                    <option value="">-- Önce marka seçin --</option>
+                </select>
+            </div>
+            
+            <div class="step">
+                <div class="step-label">
+                    <span class="step-number" id="step3-num">3</span>
+                    <span class="step-title">Kasa / Yıl Seçin</span>
+                </div>
+                <select id="kasa" onchange="onKasaChange()" disabled>
+                    <option value="">-- Önce model seçin --</option>
+                </select>
+            </div>
+            
+            <div class="step">
+                <div class="step-label">
+                    <span class="step-number" id="step4-num">4</span>
+                    <span class="step-title">Motor / Yakıt Seçin</span>
+                </div>
+                <select id="motor" onchange="onMotorChange()" disabled>
+                    <option value="">-- Önce kasa seçin --</option>
+                </select>
+            </div>
+            
+            <button class="btn-search" id="searchBtn" onclick="search()" disabled>
+                🔍 Şaft Ara
+            </button>
+            
+            <div class="result-box" id="resultBox">
+                <!-- Sonuçlar buraya gelecek -->
+            </div>
+            
+            <div class="stats">
+                <strong>338</strong> araç kaydı • <strong>18</strong> marka • <strong>43 yıl</strong> tecrübe
+            </div>
+        </div>
+    </div>
+
+<script>
+// Veritabanı (338 kayıt)
+const saftDB = [{"marka": "BMW", "model": "2 Serisi Coupe", "kasa": "F22 LCI", "yil_baslangic": 2017, "yil_bitis": 2021, "motor": "2.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "2620948891", "sku": "FZ004602102", "urun_kodu": "FZ.004602102"}, {"marka": "BMW", "model": "2 Serisi Coupe", "kasa": "F22 LCI", "yil_baslangic": 2017, "yil_bitis": 2021, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "2620948891", "sku": "FZ004602102", "urun_kodu": "FZ.004602102"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E90/E91/E92", "yil_baslangic": 2005, "yil_bitis": 2013, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107551199", "sku": "FZ004602030", "urun_kodu": "FZ.004602030"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E90/E91/E92", "yil_baslangic": 2005, "yil_bitis": 2013, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107551199", "sku": "FZ004602030", "urun_kodu": "FZ.004602030"}, {"marka": "BMW", "model": "X3", "kasa": "E83", "yil_baslangic": 2006, "yil_bitis": 2010, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26107564736", "sku": "FZ006010702", "urun_kodu": "FZ.006010702"}, {"marka": "BMW", "model": "X3", "kasa": "E83", "yil_baslangic": 2006, "yil_bitis": 2010, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26107564736", "sku": "FZ006010702", "urun_kodu": "FZ.006010702"}, {"marka": "BMW", "model": "X3", "kasa": "E83 LCI", "yil_baslangic": 2007, "yil_bitis": 2010, "motor": "3.0", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26107564740", "sku": "FZ0040106021", "urun_kodu": "FZ.0040106021"}, {"marka": "BMW", "model": "X3", "kasa": "E83 LCI", "yil_baslangic": 2006, "yil_bitis": 2010, "motor": "3.0", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "26207525969", "sku": "FZ0060103021", "urun_kodu": "FZ.0060103021"}, {"marka": "BMW", "model": "X3", "kasa": "E83", "yil_baslangic": 2004, "yil_bitis": 2006, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26103402034", "sku": "FZ004010402", "urun_kodu": "FZ.004010402"}, {"marka": "BMW", "model": "X3", "kasa": "F25", "yil_baslangic": 2010, "yil_bitis": 2017, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26209425909", "sku": "FZ006010021", "urun_kodu": "FZ.006010021"}, {"marka": "BMW", "model": "X3", "kasa": "F25", "yil_baslangic": 2010, "yil_bitis": 2017, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26209425909", "sku": "FZ006010021", "urun_kodu": "FZ.006010021"}, {"marka": "BMW", "model": "X3", "kasa": "F25", "yil_baslangic": 2010, "yil_bitis": 2017, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26209425909", "sku": "FZ006010021", "urun_kodu": "FZ.006010021"}, {"marka": "BMW", "model": "X5", "kasa": "E53", "yil_baslangic": 2000, "yil_bitis": 2006, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26207508629", "sku": "FZ006010502", "urun_kodu": "FZ.006010502"}, {"marka": "BMW", "model": "X5", "kasa": "E53", "yil_baslangic": 2000, "yil_bitis": 2006, "motor": "4.4", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26207508629", "sku": "FZ006010502", "urun_kodu": "FZ.006010502"}, {"marka": "BMW", "model": "X5", "kasa": "E70", "yil_baslangic": 2006, "yil_bitis": 2013, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26207556019", "sku": "FZ006010802", "urun_kodu": "FZ.006010802"}, {"marka": "BMW", "model": "X5", "kasa": "E70", "yil_baslangic": 2006, "yil_bitis": 2013, "motor": "4.8", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26207556019", "sku": "FZ006010802", "urun_kodu": "FZ.006010802"}, {"marka": "BMW", "model": "X5", "kasa": "E70", "yil_baslangic": 2006, "yil_bitis": 2013, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26207556019", "sku": "FZ006010802", "urun_kodu": "FZ.006010802"}, {"marka": "BMW", "model": "X5", "kasa": "F15", "yil_baslangic": 2013, "yil_bitis": 2018, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26209425907", "sku": "FZ009010202", "urun_kodu": "FZ.009010202"}, {"marka": "BMW", "model": "X5", "kasa": "F15", "yil_baslangic": 2013, "yil_bitis": 2018, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26209425907", "sku": "FZ009010202", "urun_kodu": "FZ.009010202"}, {"marka": "BMW", "model": "X6", "kasa": "F16", "yil_baslangic": 2014, "yil_bitis": 2019, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26209425907", "sku": "FZ009010202", "urun_kodu": "FZ.009010202"}, {"marka": "BMW", "model": "X6", "kasa": "F16", "yil_baslangic": 2014, "yil_bitis": 2019, "motor": "4.4", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26209425907", "sku": "FZ009010202", "urun_kodu": "FZ.009010202"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E36", "yil_baslangic": 1989, "yil_bitis": 1999, "motor": "1.8", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26111227376", "sku": "2557", "urun_kodu": "2557"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E36", "yil_baslangic": 1989, "yil_bitis": 1999, "motor": "2.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26111227376", "sku": "2557", "urun_kodu": "2557"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E36", "yil_baslangic": 1989, "yil_bitis": 1999, "motor": "2.5", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26111227376", "sku": "2557", "urun_kodu": "2557"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E36", "yil_baslangic": 1989, "yil_bitis": 1999, "motor": "2.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26111227376", "sku": "2557", "urun_kodu": "2557"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E46", "yil_baslangic": 1997, "yil_bitis": 2006, "motor": "1.8", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26111229554", "sku": "2541", "urun_kodu": "2541"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E46", "yil_baslangic": 1997, "yil_bitis": 2006, "motor": "2.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26111229554", "sku": "2541", "urun_kodu": "2541"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E46", "yil_baslangic": 1998, "yil_bitis": 2005, "motor": "2.5", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26111229564", "sku": "2517", "urun_kodu": "2517"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E46", "yil_baslangic": 1998, "yil_bitis": 2005, "motor": "3.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26111229564", "sku": "2517", "urun_kodu": "2517"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E46", "yil_baslangic": 2000, "yil_bitis": 2006, "motor": "2.0", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26117510840/26117506840/26117519303", "sku": "2516", "urun_kodu": "2516"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E46", "yil_baslangic": 2000, "yil_bitis": 2006, "motor": "3.0", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26117510840/26117506840/26117519303", "sku": "2516", "urun_kodu": "2516"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E46", "yil_baslangic": 2000, "yil_bitis": 2006, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26117510840/26117506840/26117519303", "sku": "2516", "urun_kodu": "2516"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E90/E91/E92/E93", "yil_baslangic": 2004, "yil_bitis": 2013, "motor": "2.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107527333", "sku": "2514", "urun_kodu": "2514"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E90/E91/E92/E93", "yil_baslangic": 2004, "yil_bitis": 2013, "motor": "3.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107527333", "sku": "2514", "urun_kodu": "2514"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E90/E91/E92/E93", "yil_baslangic": 2004, "yil_bitis": 2013, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107527339", "sku": "2559", "urun_kodu": "2559"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E90/E91/E92/E93", "yil_baslangic": 2004, "yil_bitis": 2013, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107527339", "sku": "2559", "urun_kodu": "2559"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E90/E91/E92/E93", "yil_baslangic": 2004, "yil_bitis": 2013, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107527339", "sku": "2559", "urun_kodu": "2559"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "F30/F31", "yil_baslangic": 2011, "yil_bitis": 2016, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26117609365", "sku": "2547", "urun_kodu": "2547"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "F30/F31", "yil_baslangic": 2011, "yil_bitis": 2016, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26117609365", "sku": "2547", "urun_kodu": "2547"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "F30/F31", "yil_baslangic": 2011, "yil_bitis": 2016, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26117609365", "sku": "2547", "urun_kodu": "2547"}, {"marka": "BMW", "model": "3 / 4 Serisi", "kasa": "F30/F31/F32/F33", "yil_baslangic": 2014, "yil_bitis": 2019, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107641031", "sku": "2555", "urun_kodu": "2555"}, {"marka": "BMW", "model": "3 / 4 Serisi", "kasa": "F30/F31/F32/F33", "yil_baslangic": 2014, "yil_bitis": 2019, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107641031", "sku": "2555", "urun_kodu": "2555"}, {"marka": "BMW", "model": "3 / 4 Serisi", "kasa": "F30/F31/F32/F33", "yil_baslangic": 2014, "yil_bitis": 2019, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107641031", "sku": "2555", "urun_kodu": "2555"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "E39", "yil_baslangic": 1995, "yil_bitis": 2000, "motor": "2.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26101229271", "sku": "2551", "urun_kodu": "2551"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "E39", "yil_baslangic": 1995, "yil_bitis": 2000, "motor": "2.5", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26101229271", "sku": "2551", "urun_kodu": "2551"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "E39", "yil_baslangic": 1995, "yil_bitis": 2003, "motor": "2.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26101229699/26107523787", "sku": "2552", "urun_kodu": "2552"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "E39", "yil_baslangic": 1995, "yil_bitis": 2003, "motor": "2.8", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26101229699/26107523787", "sku": "2552", "urun_kodu": "2552"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "E39", "yil_baslangic": 1995, "yil_bitis": 2003, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26101229699/26107523787", "sku": "2552", "urun_kodu": "2552"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "E39", "yil_baslangic": 1998, "yil_bitis": 2003, "motor": "2.5", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26101229699/26107523787", "sku": "2552", "urun_kodu": "2552"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "E60/E61", "yil_baslangic": 2002, "yil_bitis": 2007, "motor": "2.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107557161/26107522030/26107573574", "sku": "2545", "urun_kodu": "2545"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "E60/E61", "yil_baslangic": 2002, "yil_bitis": 2007, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107557161/26107522030/26107573574", "sku": "2545", "urun_kodu": "2545"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "E60/E61", "yil_baslangic": 2002, "yil_bitis": 2007, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107557161/26107522030/26107573574", "sku": "2545", "urun_kodu": "2545"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "E60/E61", "yil_baslangic": 2002, "yil_bitis": 2007, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107557161/26107522030/26107573574", "sku": "2545", "urun_kodu": "2545"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "E60", "yil_baslangic": 2006, "yil_bitis": 2010, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26207534636/26209488490", "sku": "5101", "urun_kodu": "5101"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "E60", "yil_baslangic": 2006, "yil_bitis": 2010, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26207534636/26209488490", "sku": "5101", "urun_kodu": "5101"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "F10/F11", "yil_baslangic": 2010, "yil_bitis": 2013, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107563118/26107629415", "sku": "2548", "urun_kodu": "2548"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "F10/F11", "yil_baslangic": 2010, "yil_bitis": 2013, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107563118/26107629415", "sku": "2548", "urun_kodu": "2548"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "F10/F11", "yil_baslangic": 2010, "yil_bitis": 2013, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107563118/26107629415", "sku": "2548", "urun_kodu": "2548"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "F10", "yil_baslangic": 2010, "yil_bitis": 2017, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26208628043/26207629988", "sku": "51025066", "urun_kodu": "5102/5066"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "F10", "yil_baslangic": 2010, "yil_bitis": 2017, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26208628043/26207629988", "sku": "51025066", "urun_kodu": "5102/5066"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "F10", "yil_baslangic": 2010, "yil_bitis": 2017, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26208628043/26207629988", "sku": "51025066", "urun_kodu": "5102/5066"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "F10/F11 LCI", "yil_baslangic": 2012, "yil_bitis": 2017, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107639214/26108693404/26108648854", "sku": "2521", "urun_kodu": "2521"}, {"marka": "BMW", "model": "5 Serisi", "kasa": "F10/F11 LCI", "yil_baslangic": 2012, "yil_bitis": 2017, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107639214/26108693404/26108648854", "sku": "2521", "urun_kodu": "2521"}, {"marka": "BMW", "model": "X5", "kasa": "E53", "yil_baslangic": 1999, "yil_bitis": 2006, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "26207524371", "sku": "5060", "urun_kodu": "5060"}, {"marka": "BMW", "model": "X5", "kasa": "E53", "yil_baslangic": 1999, "yil_bitis": 2006, "motor": "4.4", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "26207524371", "sku": "5060", "urun_kodu": "5060"}, {"marka": "BMW", "model": "X5", "kasa": "E53", "yil_baslangic": 1998, "yil_bitis": 2006, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26201229606/26207508629", "sku": "5100", "urun_kodu": "5100"}, {"marka": "BMW", "model": "X5", "kasa": "E53", "yil_baslangic": 1998, "yil_bitis": 2006, "motor": "4.4", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26201229606/26207508629", "sku": "5100", "urun_kodu": "5100"}, {"marka": "BMW", "model": "X5", "kasa": "E53", "yil_baslangic": 1999, "yil_bitis": 2006, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26107524364/26107549298", "sku": "2540", "urun_kodu": "2540"}, {"marka": "BMW", "model": "X5", "kasa": "E53", "yil_baslangic": 1999, "yil_bitis": 2006, "motor": "4.4", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26107524364/26107549298", "sku": "2540", "urun_kodu": "2540"}, {"marka": "BMW", "model": "X5", "kasa": "E53", "yil_baslangic": 1999, "yil_bitis": 2006, "motor": "4.8", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26107524364/26107549298", "sku": "2540", "urun_kodu": "2540"}, {"marka": "BMW", "model": "X5", "kasa": "E70", "yil_baslangic": 2006, "yil_bitis": 2010, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "26207556019", "sku": "5065", "urun_kodu": "5065"}, {"marka": "BMW", "model": "X5", "kasa": "E70", "yil_baslangic": 2006, "yil_bitis": 2010, "motor": "4.8", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "26207556019", "sku": "5065", "urun_kodu": "5065"}, {"marka": "BMW", "model": "X5", "kasa": "E70", "yil_baslangic": 2010, "yil_bitis": 2013, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26207556020", "sku": "5097", "urun_kodu": "5097"}, {"marka": "BMW", "model": "X5", "kasa": "E70", "yil_baslangic": 2010, "yil_bitis": 2013, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26207556020", "sku": "5097", "urun_kodu": "5097"}, {"marka": "BMW", "model": "X5", "kasa": "E70", "yil_baslangic": 2008, "yil_bitis": 2019, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26207597649/26208605866/26209425907", "sku": "5099", "urun_kodu": "5099"}, {"marka": "BMW", "model": "X6", "kasa": "F71/F72/F86", "yil_baslangic": 2008, "yil_bitis": 2019, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26207597649/26208605866/26209425907", "sku": "5099", "urun_kodu": "5099"}, {"marka": "BMW", "model": "X6", "kasa": "F71/F72/F86", "yil_baslangic": 2008, "yil_bitis": 2019, "motor": "4.4", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26207597649/26208605866/26209425907", "sku": "5099", "urun_kodu": "5099"}, {"marka": "BMW", "model": "X3", "kasa": "E83", "yil_baslangic": 2004, "yil_bitis": 2010, "motor": "2.0", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26107577059", "sku": "2558", "urun_kodu": "2558"}, {"marka": "BMW", "model": "X3", "kasa": "E83", "yil_baslangic": 2004, "yil_bitis": 2010, "motor": "2.5", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26107577059", "sku": "2558", "urun_kodu": "2558"}, {"marka": "BMW", "model": "X3", "kasa": "E83/E83 LCI", "yil_baslangic": 2004, "yil_bitis": 2010, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "26203401609", "sku": "5103", "urun_kodu": "5103"}, {"marka": "BMW", "model": "X3", "kasa": "E83/E83 LCI", "yil_baslangic": 2004, "yil_bitis": 2010, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "26203401609", "sku": "5103", "urun_kodu": "5103"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E46", "yil_baslangic": 1998, "yil_bitis": 2006, "motor": "2.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26207502968/26207502969", "sku": "5098", "urun_kodu": "5098"}, {"marka": "BMW", "model": "3 Serisi", "kasa": "E46", "yil_baslangic": 1998, "yil_bitis": 2006, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "26207502968/26207502969", "sku": "5098", "urun_kodu": "5098"}, {"marka": "BMW", "model": "7 Serisi", "kasa": "G12", "yil_baslangic": 2014, "yil_bitis": 2019, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26108623154", "sku": "2556", "urun_kodu": "2556"}, {"marka": "BMW", "model": "7 Serisi", "kasa": "G12", "yil_baslangic": 2014, "yil_bitis": 2019, "motor": "4.4", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26108623154", "sku": "2556", "urun_kodu": "2556"}, {"marka": "BMW", "model": "7 Serisi", "kasa": "G12", "yil_baslangic": 2014, "yil_bitis": 2019, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26108623154", "sku": "2556", "urun_kodu": "2556"}, {"marka": "BMW", "model": "1 Serisi", "kasa": "E81/E87/E82/E88", "yil_baslangic": 2003, "yil_bitis": 2013, "motor": "2.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107537311", "sku": "2564", "urun_kodu": "2564"}, {"marka": "BMW", "model": "1 Serisi", "kasa": "E81/E87/E82/E88", "yil_baslangic": 2003, "yil_bitis": 2013, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107537311", "sku": "2564", "urun_kodu": "2564"}, {"marka": "BMW", "model": "1 Serisi", "kasa": "E81/E87/E82/E88", "yil_baslangic": 2003, "yil_bitis": 2013, "motor": "3.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107537311", "sku": "2564", "urun_kodu": "2564"}, {"marka": "BMW", "model": "1 Serisi", "kasa": "E81/E87/E82/E88", "yil_baslangic": 2003, "yil_bitis": 2013, "motor": "2.0", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107537311", "sku": "2564", "urun_kodu": "2564"}, {"marka": "BMW", "model": "1 Serisi", "kasa": "E81/E87/E82/E88", "yil_baslangic": 2003, "yil_bitis": 2013, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26107537311", "sku": "2564", "urun_kodu": "2564"}, {"marka": "BMW", "model": "1 Serisi", "kasa": "F20/F21 LCI", "yil_baslangic": 2010, "yil_bitis": 2019, "motor": "1.5", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26104608329/26107597658/26107637026", "sku": "2553", "urun_kodu": "2553"}, {"marka": "BMW", "model": "1 Serisi", "kasa": "F20/F21 LCI", "yil_baslangic": 2010, "yil_bitis": 2019, "motor": "2.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26104608329/26107597658/26107637026", "sku": "2553", "urun_kodu": "2553"}, {"marka": "BMW", "model": "1 Serisi", "kasa": "F20/F21 LCI", "yil_baslangic": 2010, "yil_bitis": 2019, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26104608329/26107597658/26107637026", "sku": "2553", "urun_kodu": "2553"}, {"marka": "BMW", "model": "1 Serisi", "kasa": "F20/F21 LCI", "yil_baslangic": 2010, "yil_bitis": 2019, "motor": "2.0", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26104608329/26107597658/26107637026", "sku": "2553", "urun_kodu": "2553"}, {"marka": "BMW", "model": "1 Serisi", "kasa": "F20/F21 LCI", "yil_baslangic": 2010, "yil_bitis": 2019, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "26104608329/26107597658/26107637026", "sku": "2553", "urun_kodu": "2553"}, {"marka": "Mercedes-Benz", "model": "A-Class 180/200", "kasa": "W176", "yil_baslangic": 2012, "yil_bitis": 2018, "motor": "1.6", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "FWD", "saft_tipi": "Standart", "oe_kodu": "A1764100200", "sku": "FZ002060021", "urun_kodu": "FZ.002060021"}, {"marka": "Mercedes-Benz", "model": "A-Class 180/200", "kasa": "W176", "yil_baslangic": 2012, "yil_bitis": 2018, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "FWD", "saft_tipi": "Standart", "oe_kodu": "A1764100200", "sku": "FZ002060021", "urun_kodu": "FZ.002060021"}, {"marka": "Mercedes-Benz", "model": "CLA 180/200/220", "kasa": "W117", "yil_baslangic": 2013, "yil_bitis": 2019, "motor": "1.6", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "FWD", "saft_tipi": "Standart", "oe_kodu": "A1764100200", "sku": "FZ002060021", "urun_kodu": "FZ.002060021"}, {"marka": "Mercedes-Benz", "model": "CLA 180/200/220", "kasa": "W117", "yil_baslangic": 2013, "yil_bitis": 2019, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "FWD", "saft_tipi": "Standart", "oe_kodu": "A1764100200", "sku": "FZ002060021", "urun_kodu": "FZ.002060021"}, {"marka": "Mercedes-Benz", "model": "C180/C200 Kompressor", "kasa": "W204", "yil_baslangic": 2007, "yil_bitis": 2014, "motor": "1.8", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "A2044100116", "sku": "FZ002020702", "urun_kodu": "FZ.002020702"}, {"marka": "Mercedes-Benz", "model": "C180/C200 Kompressor", "kasa": "W204", "yil_baslangic": 2007, "yil_bitis": 2014, "motor": "1.8", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "A2044100116", "sku": "FZ002020702", "urun_kodu": "FZ.002020702"}, {"marka": "Mercedes-Benz", "model": "C180/C200 Kompressor", "kasa": "W204", "yil_baslangic": 2007, "yil_bitis": 2014, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "A2044100116", "sku": "FZ002020702", "urun_kodu": "FZ.002020702"}, {"marka": "Mercedes-Benz", "model": "E Serisi", "kasa": "W211/W220/S211", "yil_baslangic": 2002, "yil_bitis": 2009, "motor": "3.2", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "A2204100706", "sku": "FZ002020502", "urun_kodu": "FZ.002020502"}, {"marka": "Mercedes-Benz", "model": "E Serisi", "kasa": "W211/W220/S211", "yil_baslangic": 2002, "yil_bitis": 2009, "motor": "3.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "A2204100706", "sku": "FZ002020502", "urun_kodu": "FZ.002020502"}, {"marka": "Mercedes-Benz", "model": "E Serisi", "kasa": "W211/W220/S211", "yil_baslangic": 2002, "yil_bitis": 2009, "motor": "2.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "A2204100706", "sku": "FZ002020502", "urun_kodu": "FZ.002020502"}, {"marka": "Mercedes-Benz", "model": "E Serisi", "kasa": "W211/W220/S211", "yil_baslangic": 2002, "yil_bitis": 2009, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "A2204100706", "sku": "FZ002020502", "urun_kodu": "FZ.002020502"}, {"marka": "Mercedes-Benz", "model": "ML 320/350/500", "kasa": "W163", "yil_baslangic": 1998, "yil_bitis": 2005, "motor": "3.2", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A1634100201", "sku": "FZ002010202", "urun_kodu": "FZ.002010202"}, {"marka": "Mercedes-Benz", "model": "ML 320/350/500", "kasa": "W163", "yil_baslangic": 1998, "yil_bitis": 2005, "motor": "3.7", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A1634100201", "sku": "FZ002010202", "urun_kodu": "FZ.002010202"}, {"marka": "Mercedes-Benz", "model": "ML 320/350/500", "kasa": "W163", "yil_baslangic": 1998, "yil_bitis": 2005, "motor": "2.7", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A1634100201", "sku": "FZ002010202", "urun_kodu": "FZ.002010202"}, {"marka": "Mercedes-Benz", "model": "ML 350/500", "kasa": "W164", "yil_baslangic": 2005, "yil_bitis": 2011, "motor": "3.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A1664100501", "sku": "FZ002010302", "urun_kodu": "FZ.002010302"}, {"marka": "Mercedes-Benz", "model": "ML 350/500", "kasa": "W164", "yil_baslangic": 2005, "yil_bitis": 2011, "motor": "5.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A1664100501", "sku": "FZ002010302", "urun_kodu": "FZ.002010302"}, {"marka": "Mercedes-Benz", "model": "ML 350/500", "kasa": "W164", "yil_baslangic": 2005, "yil_bitis": 2011, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A1664100501", "sku": "FZ002010302", "urun_kodu": "FZ.002010302"}, {"marka": "Mercedes-Benz", "model": "ML 350/400", "kasa": "W166", "yil_baslangic": 2011, "yil_bitis": 2019, "motor": "3.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A1664100501", "sku": "FZ002010302", "urun_kodu": "FZ.002010302"}, {"marka": "Mercedes-Benz", "model": "ML 350/400", "kasa": "W166", "yil_baslangic": 2011, "yil_bitis": 2019, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A1664100501", "sku": "FZ002010302", "urun_kodu": "FZ.002010302"}, {"marka": "Mercedes-Benz", "model": "GL 420/500", "kasa": "X164", "yil_baslangic": 2006, "yil_bitis": 2012, "motor": "4.7", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A1664100501", "sku": "FZ002010302", "urun_kodu": "FZ.002010302"}, {"marka": "Mercedes-Benz", "model": "GL 420/500", "kasa": "X164", "yil_baslangic": 2006, "yil_bitis": 2012, "motor": "5.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A1664100501", "sku": "FZ002010302", "urun_kodu": "FZ.002010302"}, {"marka": "Mercedes-Benz", "model": "GL 420/500", "kasa": "X164", "yil_baslangic": 2006, "yil_bitis": 2012, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A1664100501", "sku": "FZ002010302", "urun_kodu": "FZ.002010302"}, {"marka": "Mercedes-Benz", "model": "GL 350/400", "kasa": "X166", "yil_baslangic": 2013, "yil_bitis": 2019, "motor": "3.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A1664100501", "sku": "FZ002010302", "urun_kodu": "FZ.002010302"}, {"marka": "Mercedes-Benz", "model": "GL 350/400", "kasa": "X166", "yil_baslangic": 2013, "yil_bitis": 2019, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A1664100501", "sku": "FZ002010302", "urun_kodu": "FZ.002010302"}, {"marka": "Mercedes-Benz", "model": "Vito/Viano", "kasa": "W639", "yil_baslangic": 2003, "yil_bitis": 2014, "motor": "2.1", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "A6394107006", "sku": "FZ002030021", "urun_kodu": "FZ.002030021"}, {"marka": "Mercedes-Benz", "model": "Vito/Viano", "kasa": "W639", "yil_baslangic": 2003, "yil_bitis": 2014, "motor": "2.1", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "A6394107006", "sku": "FZ002030021", "urun_kodu": "FZ.002030021"}, {"marka": "Mercedes-Benz", "model": "Vito", "kasa": "W639", "yil_baslangic": 2003, "yil_bitis": 2014, "motor": "2.2", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "A6394103206", "sku": "2531", "urun_kodu": "2531"}, {"marka": "Mercedes-Benz", "model": "Vito", "kasa": "W639", "yil_baslangic": 2003, "yil_bitis": 2014, "motor": "2.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "A6394103206", "sku": "2531", "urun_kodu": "2531"}, {"marka": "Mercedes-Benz", "model": "Vito", "kasa": "W639", "yil_baslangic": 2003, "yil_bitis": 2014, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "A6394103006", "sku": "2532", "urun_kodu": "2532"}, {"marka": "Mercedes-Benz", "model": "C Serisi 4MATIC", "kasa": "W204", "yil_baslangic": 2007, "yil_bitis": 2014, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A2044102601/A2044106701", "sku": "5030", "urun_kodu": "5030"}, {"marka": "Mercedes-Benz", "model": "C Serisi 4MATIC", "kasa": "W204", "yil_baslangic": 2007, "yil_bitis": 2014, "motor": "3.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A2044102601/A2044106701", "sku": "5030", "urun_kodu": "5030"}, {"marka": "Mercedes-Benz", "model": "C Serisi 4MATIC", "kasa": "W204", "yil_baslangic": 2007, "yil_bitis": 2014, "motor": "2.1", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A2044102601/A2044106701", "sku": "5030", "urun_kodu": "5030"}, {"marka": "Mercedes-Benz", "model": "S Serisi 4MATIC", "kasa": "W221", "yil_baslangic": 2006, "yil_bitis": 2013, "motor": "3.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A2214101701", "sku": "5030", "urun_kodu": "5030"}, {"marka": "Mercedes-Benz", "model": "S Serisi 4MATIC", "kasa": "W221", "yil_baslangic": 2006, "yil_bitis": 2013, "motor": "5.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A2214101701", "sku": "5030", "urun_kodu": "5030"}, {"marka": "Mercedes-Benz", "model": "E Serisi", "kasa": "W211/W220/S211", "yil_baslangic": 2002, "yil_bitis": 2009, "motor": "3.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A2204107106", "sku": "5059", "urun_kodu": "5059"}, {"marka": "Mercedes-Benz", "model": "E Serisi", "kasa": "W211/W220/S211", "yil_baslangic": 2002, "yil_bitis": 2009, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "A2204107106", "sku": "5059", "urun_kodu": "5059"}, {"marka": "Audi", "model": "A4 Quattro", "kasa": "B7", "yil_baslangic": 2004, "yil_bitis": 2008, "motor": "2.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8E0521101T", "sku": "FZ0100202021", "urun_kodu": "FZ.0100202021"}, {"marka": "Audi", "model": "A4 Quattro", "kasa": "B7", "yil_baslangic": 2004, "yil_bitis": 2008, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8E0521101T", "sku": "FZ0100202021", "urun_kodu": "FZ.0100202021"}, {"marka": "Audi", "model": "A4 Quattro", "kasa": "B7", "yil_baslangic": 2004, "yil_bitis": 2008, "motor": "3.2", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8E0521101T", "sku": "FZ0100202021", "urun_kodu": "FZ.0100202021"}, {"marka": "Audi", "model": "A4 Quattro", "kasa": "B7", "yil_baslangic": 2004, "yil_bitis": 2008, "motor": "2.0", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8E0521101T", "sku": "FZ0100202021", "urun_kodu": "FZ.0100202021"}, {"marka": "Audi", "model": "A4 Quattro", "kasa": "B7", "yil_baslangic": 2004, "yil_bitis": 2008, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8E0521101T", "sku": "FZ0100202021", "urun_kodu": "FZ.0100202021"}, {"marka": "Audi", "model": "A4 Quattro", "kasa": "B8", "yil_baslangic": 2008, "yil_bitis": 2016, "motor": "2.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8K0521101Q", "sku": "FZ010010202", "urun_kodu": "FZ.010010202"}, {"marka": "Audi", "model": "A4 Quattro", "kasa": "B8", "yil_baslangic": 2008, "yil_bitis": 2016, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8K0521101Q", "sku": "FZ010010202", "urun_kodu": "FZ.010010202"}, {"marka": "Audi", "model": "A4 Quattro", "kasa": "B8", "yil_baslangic": 2008, "yil_bitis": 2016, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8K0521101Q", "sku": "FZ010010202", "urun_kodu": "FZ.010010202"}, {"marka": "Audi", "model": "A4 Quattro", "kasa": "B8", "yil_baslangic": 2008, "yil_bitis": 2016, "motor": "2.0", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8K0521101Q", "sku": "FZ010010202", "urun_kodu": "FZ.010010202"}, {"marka": "Audi", "model": "A4 Quattro", "kasa": "B8", "yil_baslangic": 2008, "yil_bitis": 2016, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8K0521101Q", "sku": "FZ010010202", "urun_kodu": "FZ.010010202"}, {"marka": "Audi", "model": "Q5", "kasa": "8R", "yil_baslangic": 2008, "yil_bitis": 2017, "motor": "2.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8R0521101Q", "sku": "FZ010010202", "urun_kodu": "FZ.010010202"}, {"marka": "Audi", "model": "Q5", "kasa": "8R", "yil_baslangic": 2008, "yil_bitis": 2017, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8R0521101Q", "sku": "FZ010010202", "urun_kodu": "FZ.010010202"}, {"marka": "Audi", "model": "Q5", "kasa": "8R", "yil_baslangic": 2008, "yil_bitis": 2017, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8R0521101Q", "sku": "FZ010010202", "urun_kodu": "FZ.010010202"}, {"marka": "Audi", "model": "Q5", "kasa": "8R", "yil_baslangic": 2008, "yil_bitis": 2017, "motor": "2.0", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8R0521101Q", "sku": "FZ010010202", "urun_kodu": "FZ.010010202"}, {"marka": "Audi", "model": "Q5", "kasa": "8R", "yil_baslangic": 2008, "yil_bitis": 2017, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8R0521101Q", "sku": "FZ010010202", "urun_kodu": "FZ.010010202"}, {"marka": "Audi", "model": "Q5", "kasa": "8R", "yil_baslangic": 2008, "yil_bitis": 2017, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8R0521101Q", "sku": "FZ010010202", "urun_kodu": "FZ.010010202"}, {"marka": "Audi", "model": "Q7", "kasa": "4L", "yil_baslangic": 2006, "yil_bitis": 2015, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7L6521102P", "sku": "FZ001010202", "urun_kodu": "FZ.001010202"}, {"marka": "Audi", "model": "Q7", "kasa": "4L", "yil_baslangic": 2006, "yil_bitis": 2015, "motor": "4.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7L6521102P", "sku": "FZ001010202", "urun_kodu": "FZ.001010202"}, {"marka": "Audi", "model": "Q7", "kasa": "4L", "yil_baslangic": 2006, "yil_bitis": 2015, "motor": "3.6", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7L6521102P", "sku": "FZ001010202", "urun_kodu": "FZ.001010202"}, {"marka": "Audi", "model": "Q7", "kasa": "4M", "yil_baslangic": 2015, "yil_bitis": 2019, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7P0521102J", "sku": "FZ001010402", "urun_kodu": "FZ.001010402"}, {"marka": "Audi", "model": "Q7", "kasa": "4M", "yil_baslangic": 2015, "yil_bitis": 2019, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7P0521102J", "sku": "FZ001010402", "urun_kodu": "FZ.001010402"}, {"marka": "Audi", "model": "A6", "kasa": "C6 (4F)", "yil_baslangic": 2004, "yil_bitis": 2011, "motor": "2.4", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "4F0521101/4F0521101E", "sku": "2568", "urun_kodu": "2568"}, {"marka": "Audi", "model": "A6", "kasa": "C6 (4F)", "yil_baslangic": 2004, "yil_bitis": 2011, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "4F0521101/4F0521101E", "sku": "2568", "urun_kodu": "2568"}, {"marka": "Audi", "model": "A6", "kasa": "C6 (4F)", "yil_baslangic": 2004, "yil_bitis": 2011, "motor": "3.2", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "4F0521101/4F0521101E", "sku": "2568", "urun_kodu": "2568"}, {"marka": "Audi", "model": "A6", "kasa": "C6 (4F)", "yil_baslangic": 2004, "yil_bitis": 2011, "motor": "2.7", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "4F0521101/4F0521101E", "sku": "2568", "urun_kodu": "2568"}, {"marka": "Audi", "model": "A6", "kasa": "C6 (4F)", "yil_baslangic": 2004, "yil_bitis": 2011, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "4F0521101/4F0521101E", "sku": "2568", "urun_kodu": "2568"}, {"marka": "Audi", "model": "A6", "kasa": "C7 (4G)", "yil_baslangic": 2010, "yil_bitis": 2018, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "4GD521101A/B/C", "sku": "2507", "urun_kodu": "2507"}, {"marka": "Audi", "model": "A6", "kasa": "C7 (4G)", "yil_baslangic": 2010, "yil_bitis": 2018, "motor": "4.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "4GD521101A/B/C", "sku": "2507", "urun_kodu": "2507"}, {"marka": "Audi", "model": "A6", "kasa": "C7 (4G)", "yil_baslangic": 2010, "yil_bitis": 2018, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "4GD521101A/B/C", "sku": "2507", "urun_kodu": "2507"}, {"marka": "Audi", "model": "A7", "kasa": "C7 (4G)", "yil_baslangic": 2010, "yil_bitis": 2018, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "4GD521101A/B/C", "sku": "2507", "urun_kodu": "2507"}, {"marka": "Audi", "model": "A7", "kasa": "C7 (4G)", "yil_baslangic": 2010, "yil_bitis": 2018, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "4GD521101A/B/C", "sku": "2507", "urun_kodu": "2507"}, {"marka": "Audi", "model": "A6", "kasa": "C7 (4G)", "yil_baslangic": 2010, "yil_bitis": 2018, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8K0521101N/8K0521101AA", "sku": "2503", "urun_kodu": "2503"}, {"marka": "Audi", "model": "A6", "kasa": "C7 (4G)", "yil_baslangic": 2010, "yil_bitis": 2018, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8K0521101N/8K0521101AA", "sku": "2503", "urun_kodu": "2503"}, {"marka": "Audi", "model": "A7", "kasa": "C7 (4G)", "yil_baslangic": 2010, "yil_bitis": 2018, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8K0521101N/8K0521101AA", "sku": "2503", "urun_kodu": "2503"}, {"marka": "Audi", "model": "A7", "kasa": "C7 (4G)", "yil_baslangic": 2010, "yil_bitis": 2018, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "8K0521101N/8K0521101AA", "sku": "2503", "urun_kodu": "2503"}, {"marka": "Audi", "model": "A8", "kasa": "D4 (4H)", "yil_baslangic": 2010, "yil_bitis": 2013, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "4H0521101H/D/B", "sku": "2511", "urun_kodu": "2511"}, {"marka": "Audi", "model": "A8", "kasa": "D4 (4H)", "yil_baslangic": 2010, "yil_bitis": 2013, "motor": "4.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "4H0521101H/D/B", "sku": "2511", "urun_kodu": "2511"}, {"marka": "Audi", "model": "A8", "kasa": "D4 (4H)", "yil_baslangic": 2010, "yil_bitis": 2013, "motor": "4.2", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "4H0521101H/D/B", "sku": "2511", "urun_kodu": "2511"}, {"marka": "Audi", "model": "A8", "kasa": "D4 (4H)", "yil_baslangic": 2010, "yil_bitis": 2013, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "4H0521101H/D/B", "sku": "2511", "urun_kodu": "2511"}, {"marka": "Audi", "model": "S8", "kasa": "D4 (4H)", "yil_baslangic": 2010, "yil_bitis": 2013, "motor": "4.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "4H0521101H/D/B", "sku": "2511", "urun_kodu": "2511"}, {"marka": "Audi", "model": "Q7", "kasa": "4L", "yil_baslangic": 2006, "yil_bitis": 2015, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7L8521102D/F/M", "sku": "2504", "urun_kodu": "2504"}, {"marka": "Audi", "model": "Q7", "kasa": "4L", "yil_baslangic": 2006, "yil_bitis": 2015, "motor": "4.2", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7L8521102D/F/M", "sku": "2504", "urun_kodu": "2504"}, {"marka": "Audi", "model": "Q7", "kasa": "4L", "yil_baslangic": 2006, "yil_bitis": 2015, "motor": "6.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7L8521102D/F/M", "sku": "2504", "urun_kodu": "2504"}, {"marka": "Volkswagen", "model": "Tiguan", "kasa": "5N", "yil_baslangic": 2012, "yil_bitis": 2019, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "5N0521101C-B", "sku": "2505", "urun_kodu": "2505"}, {"marka": "Volkswagen", "model": "Tiguan", "kasa": "5N", "yil_baslangic": 2012, "yil_bitis": 2019, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "5N0521101C-B", "sku": "2505", "urun_kodu": "2505"}, {"marka": "Volkswagen", "model": "Touareg", "kasa": "7L", "yil_baslangic": 2002, "yil_bitis": 2010, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7L0521102M/N/7L6521102C/G", "sku": "2501", "urun_kodu": "2501"}, {"marka": "Volkswagen", "model": "Touareg", "kasa": "7L", "yil_baslangic": 2002, "yil_bitis": 2010, "motor": "3.2", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7L0521102M/N/7L6521102C/G", "sku": "2501", "urun_kodu": "2501"}, {"marka": "Volkswagen", "model": "Touareg", "kasa": "7L", "yil_baslangic": 2002, "yil_bitis": 2010, "motor": "4.2", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7L0521102M/N/7L6521102C/G", "sku": "2501", "urun_kodu": "2501"}, {"marka": "Porsche", "model": "Cayenne", "kasa": "955/957", "yil_baslangic": 2003, "yil_bitis": 2010, "motor": "3.2", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7L6521102P", "sku": "FZ001010202", "urun_kodu": "FZ.001010202"}, {"marka": "Porsche", "model": "Cayenne", "kasa": "955/957", "yil_baslangic": 2003, "yil_bitis": 2010, "motor": "4.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7L6521102P", "sku": "FZ001010202", "urun_kodu": "FZ.001010202"}, {"marka": "Porsche", "model": "Cayenne", "kasa": "955/957", "yil_baslangic": 2003, "yil_bitis": 2010, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7L6521102P", "sku": "FZ001010202", "urun_kodu": "FZ.001010202"}, {"marka": "Porsche", "model": "Cayenne", "kasa": "955/957", "yil_baslangic": 2003, "yil_bitis": 2010, "motor": "3.2", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7L0521102M/N/7L6521102C/G", "sku": "2501", "urun_kodu": "2501"}, {"marka": "Porsche", "model": "Cayenne", "kasa": "955/957", "yil_baslangic": 2003, "yil_bitis": 2010, "motor": "4.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7L0521102M/N/7L6521102C/G", "sku": "2501", "urun_kodu": "2501"}, {"marka": "Porsche", "model": "Cayenne", "kasa": "958", "yil_baslangic": 2011, "yil_bitis": 2018, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7P0521102J", "sku": "FZ001010402", "urun_kodu": "FZ.001010402"}, {"marka": "Porsche", "model": "Cayenne", "kasa": "958", "yil_baslangic": 2011, "yil_bitis": 2018, "motor": "3.6", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "7P0521102J", "sku": "FZ001010402", "urun_kodu": "FZ.001010402"}, {"marka": "Porsche", "model": "Panamera", "kasa": "970", "yil_baslangic": 2009, "yil_bitis": 2016, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "70.421.011.02/970.421.011.04", "sku": "2528", "urun_kodu": "2528"}, {"marka": "Porsche", "model": "Panamera", "kasa": "970", "yil_baslangic": 2009, "yil_bitis": 2016, "motor": "3.6", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "70.421.011.02/970.421.011.04", "sku": "2528", "urun_kodu": "2528"}, {"marka": "Porsche", "model": "Panamera", "kasa": "970", "yil_baslangic": 2009, "yil_bitis": 2016, "motor": "4.8", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "70.421.011.02/970.421.011.04", "sku": "2528", "urun_kodu": "2528"}, {"marka": "Porsche", "model": "Panamera", "kasa": "970", "yil_baslangic": 2009, "yil_bitis": 2016, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "70.421.011.02/970.421.011.04", "sku": "2528", "urun_kodu": "2528"}, {"marka": "Porsche", "model": "Panamera", "kasa": "970", "yil_baslangic": 2009, "yil_bitis": 2016, "motor": "4.8", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "70.421.011.02/970.421.011.04", "sku": "2528", "urun_kodu": "2528"}, {"marka": "Porsche", "model": "Macan", "kasa": "95B", "yil_baslangic": 2014, "yil_bitis": 2019, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "95B521101E/Q/J", "sku": "2572", "urun_kodu": "2572"}, {"marka": "Porsche", "model": "Macan", "kasa": "95B", "yil_baslangic": 2014, "yil_bitis": 2019, "motor": "3.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "95B521101E/Q/J", "sku": "2572", "urun_kodu": "2572"}, {"marka": "Porsche", "model": "Macan", "kasa": "95B", "yil_baslangic": 2014, "yil_bitis": 2019, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "95B521101E/Q/J", "sku": "2572", "urun_kodu": "2572"}, {"marka": "Land Rover", "model": "Discovery 3", "kasa": "L319", "yil_baslangic": 2004, "yil_bitis": 2009, "motor": "2.7", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "TVB000090", "sku": "FZ007010021", "urun_kodu": "FZ.007010021"}, {"marka": "Land Rover", "model": "Discovery 3", "kasa": "L319", "yil_baslangic": 2004, "yil_bitis": 2009, "motor": "2.7", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "TVB000090", "sku": "FZ007010021", "urun_kodu": "FZ.007010021"}, {"marka": "Land Rover", "model": "Discovery 4", "kasa": "L319", "yil_baslangic": 2009, "yil_bitis": 2016, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "LR082558", "sku": "FZ007010402", "urun_kodu": "FZ.007010402"}, {"marka": "Land Rover", "model": "Discovery 4", "kasa": "L319", "yil_baslangic": 2009, "yil_bitis": 2016, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "LR082558", "sku": "FZ007010402", "urun_kodu": "FZ.007010402"}, {"marka": "Land Rover", "model": "Discovery 4", "kasa": "L319", "yil_baslangic": 2009, "yil_bitis": 2016, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "LR082556", "sku": "FZ008013012", "urun_kodu": "FZ.008013012"}, {"marka": "Land Rover", "model": "Range Rover Sport", "kasa": "L320", "yil_baslangic": 2005, "yil_bitis": 2013, "motor": "2.7", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "LR082558", "sku": "FZ007010402", "urun_kodu": "FZ.007010402"}, {"marka": "Land Rover", "model": "Range Rover Sport", "kasa": "L320", "yil_baslangic": 2005, "yil_bitis": 2013, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "LR082558", "sku": "FZ007010402", "urun_kodu": "FZ.007010402"}, {"marka": "Land Rover", "model": "Range Rover Sport", "kasa": "L320", "yil_baslangic": 2005, "yil_bitis": 2013, "motor": "2.7", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "LR082558", "sku": "FZ007010402", "urun_kodu": "FZ.007010402"}, {"marka": "Land Rover", "model": "Range Rover Sport", "kasa": "L320", "yil_baslangic": 2005, "yil_bitis": 2013, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "LR082558", "sku": "FZ007010402", "urun_kodu": "FZ.007010402"}, {"marka": "Land Rover", "model": "Discovery 3", "kasa": "L319", "yil_baslangic": 2005, "yil_bitis": 2016, "motor": "2.7", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "TVB500360/LR037027", "sku": "2512", "urun_kodu": "2512"}, {"marka": "Land Rover", "model": "Discovery 3", "kasa": "L319", "yil_baslangic": 2005, "yil_bitis": 2016, "motor": "4.4", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "TVB500360/LR037027", "sku": "2512", "urun_kodu": "2512"}, {"marka": "Land Rover", "model": "Discovery 3/4", "kasa": "L319", "yil_baslangic": 2005, "yil_bitis": 2019, "motor": "2.7", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "TVB500160", "sku": "5057", "urun_kodu": "5057"}, {"marka": "Land Rover", "model": "Discovery 3/4", "kasa": "L319", "yil_baslangic": 2005, "yil_bitis": 2019, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "TVB500160", "sku": "5057", "urun_kodu": "5057"}, {"marka": "Land Rover", "model": "Discovery 3/4", "kasa": "L319", "yil_baslangic": 2005, "yil_bitis": 2019, "motor": "2.7", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "TVB500160", "sku": "5057", "urun_kodu": "5057"}, {"marka": "Land Rover", "model": "Range Rover Sport", "kasa": "L320", "yil_baslangic": 2005, "yil_bitis": 2013, "motor": "4.4", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "TVB500510/TVB500160", "sku": "5146", "urun_kodu": "5146"}, {"marka": "Land Rover", "model": "Range Rover Sport", "kasa": "L320", "yil_baslangic": 2005, "yil_bitis": 2013, "motor": "5.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "TVB500510/TVB500160", "sku": "5146", "urun_kodu": "5146"}, {"marka": "Land Rover", "model": "Range Rover Sport", "kasa": "L320", "yil_baslangic": 2005, "yil_bitis": 2013, "motor": "4.4", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "TVB500510/TVB500160", "sku": "5146", "urun_kodu": "5146"}, {"marka": "Land Rover", "model": "Freelander 2", "kasa": "—", "yil_baslangic": 2010, "yil_bitis": 2014, "motor": "2.2", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "LR007804/LR023283", "sku": "2530", "urun_kodu": "2530"}, {"marka": "Land Rover", "model": "Freelander 2", "kasa": "—", "yil_baslangic": 2010, "yil_bitis": 2014, "motor": "2.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "LR007804/LR023283", "sku": "2530", "urun_kodu": "2530"}, {"marka": "Land Rover", "model": "Freelander 2", "kasa": "—", "yil_baslangic": 2010, "yil_bitis": 2014, "motor": "3.2", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "LR007804/LR023283", "sku": "2530", "urun_kodu": "2530"}, {"marka": "Land Rover", "model": "Freelander 1", "kasa": "—", "yil_baslangic": 1996, "yil_bitis": 2006, "motor": "1.8", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "FTC5428/TVB000090", "sku": "5054", "urun_kodu": "5054"}, {"marka": "Land Rover", "model": "Freelander 1", "kasa": "—", "yil_baslangic": 1996, "yil_bitis": 2006, "motor": "2.0", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "FTC5428/TVB000090", "sku": "5054", "urun_kodu": "5054"}, {"marka": "Land Rover", "model": "Range Rover", "kasa": "L405", "yil_baslangic": 2013, "yil_bitis": 2025, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "LR034508/LR058371/LR071994", "sku": "2523", "urun_kodu": "2523"}, {"marka": "Land Rover", "model": "Range Rover", "kasa": "L405", "yil_baslangic": 2013, "yil_bitis": 2025, "motor": "5.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "LR034508/LR058371/LR071994", "sku": "2523", "urun_kodu": "2523"}, {"marka": "Land Rover", "model": "Range Rover", "kasa": "L405", "yil_baslangic": 2013, "yil_bitis": 2025, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "LR034508/LR058371/LR071994", "sku": "2523", "urun_kodu": "2523"}, {"marka": "Jeep", "model": "Wrangler", "kasa": "JK", "yil_baslangic": 2007, "yil_bitis": 2018, "motor": "2.8", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "52853500AB", "sku": "FZ011010302", "urun_kodu": "FZ.011010302"}, {"marka": "Jeep", "model": "Wrangler", "kasa": "JK", "yil_baslangic": 2007, "yil_bitis": 2018, "motor": "3.6", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "52853500AB", "sku": "FZ011010302", "urun_kodu": "FZ.011010302"}, {"marka": "Jeep", "model": "Wrangler", "kasa": "JK", "yil_baslangic": 2007, "yil_bitis": 2018, "motor": "2.8", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "520987AD", "sku": "FZ0110102021", "urun_kodu": "FZ.0110102021"}, {"marka": "Jeep", "model": "Commander", "kasa": "XK", "yil_baslangic": 2006, "yil_bitis": 2010, "motor": "4.7", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "52105580AE", "sku": "FZ2010101021", "urun_kodu": "FZ.2010101021"}, {"marka": "Jeep", "model": "Commander", "kasa": "XK", "yil_baslangic": 2006, "yil_bitis": 2010, "motor": "5.7", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "52105580AE", "sku": "FZ2010101021", "urun_kodu": "FZ.2010101021"}, {"marka": "Jeep", "model": "Grand Cherokee", "kasa": "WK", "yil_baslangic": 2005, "yil_bitis": 2010, "motor": "4.7", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "52105580AE", "sku": "FZ2010101021", "urun_kodu": "FZ.2010101021"}, {"marka": "Jeep", "model": "Grand Cherokee", "kasa": "WK", "yil_baslangic": 2005, "yil_bitis": 2010, "motor": "5.7", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "52105580AE", "sku": "FZ2010101021", "urun_kodu": "FZ.2010101021"}, {"marka": "Jeep", "model": "Liberty/Grand Cherokee", "kasa": "KJ", "yil_baslangic": 2005, "yil_bitis": 2007, "motor": "2.8", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "52111591AA/AB", "sku": "5029", "urun_kodu": "5029"}, {"marka": "Jeep", "model": "Liberty/Grand Cherokee", "kasa": "KJ", "yil_baslangic": 2005, "yil_bitis": 2007, "motor": "3.7", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "52111591AA/AB", "sku": "5029", "urun_kodu": "5029"}, {"marka": "Jeep", "model": "Grand Cherokee", "kasa": "WJ/WG", "yil_baslangic": 2001, "yil_bitis": 2005, "motor": "4.7", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "53003236/53005039/53005543", "sku": "5058", "urun_kodu": "5058"}, {"marka": "Jeep", "model": "Grand Cherokee", "kasa": "WJ/WG", "yil_baslangic": 2001, "yil_bitis": 2005, "motor": "2.7", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "53003236/53005039/53005543", "sku": "5058", "urun_kodu": "5058"}, {"marka": "Jeep", "model": "Cherokee", "kasa": "KL", "yil_baslangic": 2014, "yil_bitis": 2015, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "52123612AA/AB/AC/AE", "sku": "2529", "urun_kodu": "2529"}, {"marka": "Jeep", "model": "Cherokee", "kasa": "KL", "yil_baslangic": 2014, "yil_bitis": 2015, "motor": "2.4", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "52123612AA/AB/AC/AE", "sku": "2529", "urun_kodu": "2529"}, {"marka": "Volvo", "model": "XC90", "kasa": "P2", "yil_baslangic": 2002, "yil_bitis": 2014, "motor": "2.4", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "30735027", "sku": "FZ012010202", "urun_kodu": "FZ.012010202"}, {"marka": "Volvo", "model": "XC90", "kasa": "P2", "yil_baslangic": 2002, "yil_bitis": 2014, "motor": "3.2", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "30735027", "sku": "FZ012010202", "urun_kodu": "FZ.012010202"}, {"marka": "Volvo", "model": "XC90", "kasa": "P2", "yil_baslangic": 2002, "yil_bitis": 2014, "motor": "2.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "30735027", "sku": "FZ012010202", "urun_kodu": "FZ.012010202"}, {"marka": "Volvo", "model": "S60/V70/XC90", "kasa": "P2", "yil_baslangic": 2002, "yil_bitis": 2014, "motor": "2.4", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "30783345", "sku": "2509", "urun_kodu": "2509"}, {"marka": "Volvo", "model": "S60/V70/XC90", "kasa": "P2", "yil_baslangic": 2002, "yil_bitis": 2014, "motor": "2.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "30783345", "sku": "2509", "urun_kodu": "2509"}, {"marka": "Volvo", "model": "S60/S80/V60/XC60/XC70", "kasa": "—", "yil_baslangic": 2013, "yil_bitis": 2018, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "32249788/31492434/31437740", "sku": "2513", "urun_kodu": "2513"}, {"marka": "Volvo", "model": "S60/S80/V60/XC60/XC70", "kasa": "—", "yil_baslangic": 2013, "yil_bitis": 2018, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "32249788/31492434/31437740", "sku": "2513", "urun_kodu": "2513"}, {"marka": "Volvo", "model": "S60/S80/XC60", "kasa": "—", "yil_baslangic": 2007, "yil_bitis": 2012, "motor": "2.4", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "31367625/31259593/30651997", "sku": "2533", "urun_kodu": "2533"}, {"marka": "Volvo", "model": "S60/S80/XC60", "kasa": "—", "yil_baslangic": 2007, "yil_bitis": 2012, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "31367625/31259593/30651997", "sku": "2533", "urun_kodu": "2533"}, {"marka": "Volvo", "model": "S90/V90/XC90", "kasa": "SPA", "yil_baslangic": 2016, "yil_bitis": 2023, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "31492144/32249773", "sku": "2534", "urun_kodu": "2534"}, {"marka": "Volvo", "model": "S90/V90/XC90", "kasa": "SPA", "yil_baslangic": 2016, "yil_bitis": 2023, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "31492144/32249773", "sku": "2534", "urun_kodu": "2534"}, {"marka": "Volvo", "model": "XC90", "kasa": "—", "yil_baslangic": 2003, "yil_bitis": 2012, "motor": "2.4", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "31256271/8689886", "sku": "2570", "urun_kodu": "2570"}, {"marka": "Volvo", "model": "XC90", "kasa": "—", "yil_baslangic": 2003, "yil_bitis": 2012, "motor": "2.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "31256271/8689886", "sku": "2570", "urun_kodu": "2570"}, {"marka": "Toyota", "model": "RAV4", "kasa": "XA30", "yil_baslangic": 2006, "yil_bitis": 2012, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37140-42020", "sku": "FZ006010102", "urun_kodu": "FZ.006010102"}, {"marka": "Toyota", "model": "RAV4", "kasa": "XA30", "yil_baslangic": 2006, "yil_bitis": 2012, "motor": "2.2", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37140-42020", "sku": "FZ006010102", "urun_kodu": "FZ.006010102"}, {"marka": "Toyota", "model": "RAV4", "kasa": "XA30", "yil_baslangic": 2006, "yil_bitis": 2012, "motor": "2.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37140-42020", "sku": "FZ006010102", "urun_kodu": "FZ.006010102"}, {"marka": "Toyota", "model": "RAV4", "kasa": "XA40", "yil_baslangic": 2013, "yil_bitis": 2018, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37140-0R040", "sku": "FZ006010102", "urun_kodu": "FZ.006010102"}, {"marka": "Toyota", "model": "RAV4", "kasa": "XA40", "yil_baslangic": 2013, "yil_bitis": 2018, "motor": "2.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37140-0R040", "sku": "FZ006010102", "urun_kodu": "FZ.006010102"}, {"marka": "Toyota", "model": "Hilux", "kasa": "AN10/AN120", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "2.5", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37460-0K040", "sku": "FZ014010202", "urun_kodu": "FZ.014010202"}, {"marka": "Toyota", "model": "Hilux", "kasa": "AN10/AN120", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "3.0", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37460-0K040", "sku": "FZ014010202", "urun_kodu": "FZ.014010202"}, {"marka": "Toyota", "model": "Hilux", "kasa": "AN10/AN120", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37460-0K040", "sku": "FZ014010202", "urun_kodu": "FZ.014010202"}, {"marka": "Toyota", "model": "Hilux", "kasa": "AN10/AN120", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "2.5", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "37460-0K040", "sku": "FZ014010202", "urun_kodu": "FZ.014010202"}, {"marka": "Toyota", "model": "Hilux Revo", "kasa": "GUN125", "yil_baslangic": 2016, "yil_bitis": 2022, "motor": "2.4", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37460-0KQ00", "sku": "FZ0140106202", "urun_kodu": "FZ.0140106202"}, {"marka": "Toyota", "model": "Hilux Revo", "kasa": "GUN125", "yil_baslangic": 2016, "yil_bitis": 2022, "motor": "2.4", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37460-0KQ00", "sku": "FZ0140106202", "urun_kodu": "FZ.0140106202"}, {"marka": "Toyota", "model": "Hilux Revo", "kasa": "GUN125", "yil_baslangic": 2016, "yil_bitis": 2022, "motor": "2.8", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37460-0KQ00", "sku": "FZ0140106202", "urun_kodu": "FZ.0140106202"}, {"marka": "Toyota", "model": "Hilux Revo", "kasa": "GUN125", "yil_baslangic": 2016, "yil_bitis": 2022, "motor": "2.4", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "37460-0KQ00", "sku": "FZ0140106202", "urun_kodu": "FZ.0140106202"}, {"marka": "Toyota", "model": "Hilux Revo", "kasa": "GUN125/Revo", "yil_baslangic": 2015, "yil_bitis": 2022, "motor": "2.4", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37140-0K010", "sku": "5148", "urun_kodu": "5148"}, {"marka": "Toyota", "model": "Hilux Revo", "kasa": "GUN125/Revo", "yil_baslangic": 2015, "yil_bitis": 2022, "motor": "2.8", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37140-0K010", "sku": "5148", "urun_kodu": "5148"}, {"marka": "Toyota", "model": "Pickup", "kasa": "—", "yil_baslangic": 1984, "yil_bitis": 1986, "motor": "2.4", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37140-35030", "sku": "5062", "urun_kodu": "5062"}, {"marka": "Toyota", "model": "Pickup", "kasa": "—", "yil_baslangic": 1986, "yil_bitis": 1988, "motor": "2.4", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37140-35040", "sku": "5069", "urun_kodu": "5069"}, {"marka": "Toyota", "model": "Pickup/4Runner", "kasa": "—", "yil_baslangic": 1989, "yil_bitis": 1995, "motor": "2.4", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37140-35071", "sku": "5070", "urun_kodu": "5070"}, {"marka": "Toyota", "model": "Pickup/4Runner", "kasa": "—", "yil_baslangic": 1989, "yil_bitis": 1995, "motor": "3.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37140-35071", "sku": "5070", "urun_kodu": "5070"}, {"marka": "Ford", "model": "Ranger", "kasa": "T5", "yil_baslangic": 2006, "yil_bitis": 2011, "motor": "2.5", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "6M34-4602-CD", "sku": "FZ019010302", "urun_kodu": "FZ.019010302"}, {"marka": "Ford", "model": "Ranger", "kasa": "T5", "yil_baslangic": 2006, "yil_bitis": 2011, "motor": "2.5", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "6M34-4602-CD", "sku": "FZ019010302", "urun_kodu": "FZ.019010302"}, {"marka": "Ford", "model": "Ranger", "kasa": "PX/T6", "yil_baslangic": 2011, "yil_bitis": 2015, "motor": "2.2", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "AB39-4A376-AC", "sku": "FZ019010202", "urun_kodu": "FZ.019010202"}, {"marka": "Ford", "model": "Ranger", "kasa": "PX/T6", "yil_baslangic": 2011, "yil_bitis": 2015, "motor": "2.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "AB39-4A376-AC", "sku": "FZ019010202", "urun_kodu": "FZ.019010202"}, {"marka": "Ford", "model": "Ranger", "kasa": "PX/T6", "yil_baslangic": 2011, "yil_bitis": 2015, "motor": "3.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "AB39-4A376-AC", "sku": "FZ019010202", "urun_kodu": "FZ.019010202"}, {"marka": "Mazda", "model": "BT-50", "kasa": "UP", "yil_baslangic": 2011, "yil_bitis": 2015, "motor": "2.2", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "AB39-4A376-AC", "sku": "FZ019010202", "urun_kodu": "FZ.019010202"}, {"marka": "Mazda", "model": "BT-50", "kasa": "UP", "yil_baslangic": 2011, "yil_bitis": 2015, "motor": "2.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "AB39-4A376-AC", "sku": "FZ019010202", "urun_kodu": "FZ.019010202"}, {"marka": "Ford", "model": "Ranger", "kasa": "PX2", "yil_baslangic": 2015, "yil_bitis": 2019, "motor": "2.2", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "KB3G-4K145-AE", "sku": "FZ019010502", "urun_kodu": "FZ.019010502"}, {"marka": "Ford", "model": "Ranger", "kasa": "PX2", "yil_baslangic": 2015, "yil_bitis": 2019, "motor": "2.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "KB3G-4K145-AE", "sku": "FZ019010502", "urun_kodu": "FZ.019010502"}, {"marka": "Ford", "model": "Ranger PX3 Wildtrak", "kasa": "PX3", "yil_baslangic": 2019, "yil_bitis": 2021, "motor": "3.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "KB3G-4K145-BE", "sku": "FZ019010602", "urun_kodu": "FZ.019010602"}, {"marka": "Mazda", "model": "BT-50", "kasa": "UR", "yil_baslangic": 2016, "yil_bitis": 2020, "motor": "3.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "KB3G-4K145-BE", "sku": "FZ019010602", "urun_kodu": "FZ.019010602"}, {"marka": "Ford", "model": "Kuga", "kasa": "Mk1", "yil_baslangic": 2008, "yil_bitis": 2012, "motor": "2.0", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "31256426/9V4N-7L190-AA", "sku": "2566", "urun_kodu": "2566"}, {"marka": "Ford", "model": "Kuga", "kasa": "Mk1", "yil_baslangic": 2008, "yil_bitis": 2012, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "31256426/9V4N-7L190-AA", "sku": "2566", "urun_kodu": "2566"}, {"marka": "Ford", "model": "Kuga", "kasa": "Mk1", "yil_baslangic": 2008, "yil_bitis": 2012, "motor": "2.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "31256426/9V4N-7L190-AA", "sku": "2566", "urun_kodu": "2566"}, {"marka": "Ford", "model": "Kuga", "kasa": "Mk2", "yil_baslangic": 2013, "yil_bitis": 2019, "motor": "2.0", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "CV61-4K357-AD/AF", "sku": "2565", "urun_kodu": "2565"}, {"marka": "Ford", "model": "Kuga", "kasa": "Mk2", "yil_baslangic": 2013, "yil_bitis": 2019, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "CV61-4K357-AD/AF", "sku": "2565", "urun_kodu": "2565"}, {"marka": "Ford", "model": "Kuga", "kasa": "Mk2", "yil_baslangic": 2013, "yil_bitis": 2019, "motor": "1.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "CV61-4K357-AD/AF", "sku": "2565", "urun_kodu": "2565"}, {"marka": "Ford", "model": "Ranger", "kasa": "TKE", "yil_baslangic": 2011, "yil_bitis": 2019, "motor": "2.2", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "EB3G-4K145-DC/DD", "sku": "2563", "urun_kodu": "2563"}, {"marka": "Ford", "model": "Ranger", "kasa": "TKE", "yil_baslangic": 2011, "yil_bitis": 2019, "motor": "2.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "EB3G-4K145-DC/DD", "sku": "2563", "urun_kodu": "2563"}, {"marka": "Ford", "model": "Ranger", "kasa": "TKE", "yil_baslangic": 2011, "yil_bitis": 2019, "motor": "3.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "EB3G-4K145-DC/DD", "sku": "2563", "urun_kodu": "2563"}, {"marka": "Ford", "model": "Ranger", "kasa": "J97 MK3", "yil_baslangic": 2012, "yil_bitis": 2018, "motor": "2.2", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "XM34-4602-HE/HD", "sku": "2550", "urun_kodu": "2550"}, {"marka": "Ford", "model": "Ranger", "kasa": "J97 MK3", "yil_baslangic": 2012, "yil_bitis": 2018, "motor": "3.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "XM34-4602-HE/HD", "sku": "2550", "urun_kodu": "2550"}, {"marka": "Ford", "model": "Ranger", "kasa": "TKE", "yil_baslangic": 2011, "yil_bitis": 2019, "motor": "2.2", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "AB39-4K145-CD", "sku": "2561", "urun_kodu": "2561"}, {"marka": "Honda", "model": "CR-V", "kasa": "Mk2 (RD/RD7)", "yil_baslangic": 2002, "yil_bitis": 2006, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "40100-S9A-E01/40100-SCA-A01", "sku": "2536", "urun_kodu": "2536"}, {"marka": "Honda", "model": "CR-V", "kasa": "Mk2 (RD/RD7)", "yil_baslangic": 2002, "yil_bitis": 2006, "motor": "2.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "40100-S9A-E01/40100-SCA-A01", "sku": "2536", "urun_kodu": "2536"}, {"marka": "Honda", "model": "CR-V", "kasa": "Mk3 (RE)", "yil_baslangic": 2007, "yil_bitis": 2011, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "40100-SWA-A01/40100-SXS-A01", "sku": "2537", "urun_kodu": "2537"}, {"marka": "Honda", "model": "CR-V", "kasa": "Mk3 (RE)", "yil_baslangic": 2007, "yil_bitis": 2011, "motor": "2.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "40100-SWA-A01/40100-SXS-A01", "sku": "2537", "urun_kodu": "2537"}, {"marka": "Honda", "model": "CR-V", "kasa": "Mk5 (RW)", "yil_baslangic": 2017, "yil_bitis": 2021, "motor": "1.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "40100-TLA-A02/A03", "sku": "2562", "urun_kodu": "2562"}, {"marka": "Honda", "model": "CR-V", "kasa": "Mk5 (RW)", "yil_baslangic": 2017, "yil_bitis": 2021, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "40100-TLA-A02/A03", "sku": "2562", "urun_kodu": "2562"}, {"marka": "Hyundai", "model": "Grand Starex", "kasa": "—", "yil_baslangic": 2007, "yil_bitis": 2018, "motor": "2.5", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "49100-4H000", "sku": "2546", "urun_kodu": "2546"}, {"marka": "Hyundai", "model": "Grand Starex", "kasa": "—", "yil_baslangic": 2007, "yil_bitis": 2018, "motor": "2.5", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "RWD", "saft_tipi": "Standart", "oe_kodu": "49100-4H000", "sku": "2546", "urun_kodu": "2546"}, {"marka": "Mitsubishi", "model": "L200", "kasa": "—", "yil_baslangic": 2015, "yil_bitis": 2020, "motor": "2.4", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "3401A209", "sku": "2526", "urun_kodu": "2526"}, {"marka": "Mitsubishi", "model": "L200", "kasa": "—", "yil_baslangic": 2015, "yil_bitis": 2020, "motor": "2.4", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "3401A209", "sku": "2526", "urun_kodu": "2526"}, {"marka": "Mitsubishi", "model": "L200", "kasa": "—", "yil_baslangic": 2015, "yil_bitis": 2020, "motor": "2.4", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "3401A209", "sku": "2526", "urun_kodu": "2526"}, {"marka": "Mitsubishi", "model": "L200", "kasa": "—", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "2.5", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "MN168569/3401A448", "sku": "2518", "urun_kodu": "2518"}, {"marka": "Mitsubishi", "model": "L200", "kasa": "—", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "2.5", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "MN168569/3401A448", "sku": "2518", "urun_kodu": "2518"}, {"marka": "Mitsubishi", "model": "L200", "kasa": "—", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "2.5", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "MN168569/3401A448", "sku": "2518", "urun_kodu": "2518"}, {"marka": "Nissan", "model": "Navara", "kasa": "D40", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "2.5", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37000-EB30C", "sku": "2525", "urun_kodu": "2525"}, {"marka": "Nissan", "model": "Navara", "kasa": "D40", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "2.5", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37000-EB30C", "sku": "2525", "urun_kodu": "2525"}, {"marka": "Nissan", "model": "Navara", "kasa": "D40", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "2.5", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "37000-EB30C", "sku": "2525", "urun_kodu": "2525"}, {"marka": "Nissan", "model": "Qashqai", "kasa": "J10/JJ10", "yil_baslangic": 2007, "yil_bitis": 2014, "motor": "1.6", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37000-BR52A/37000-JD200", "sku": "2527", "urun_kodu": "2527"}, {"marka": "Nissan", "model": "Qashqai", "kasa": "J10/JJ10", "yil_baslangic": 2007, "yil_bitis": 2014, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37000-BR52A/37000-JD200", "sku": "2527", "urun_kodu": "2527"}, {"marka": "Nissan", "model": "Qashqai", "kasa": "J10/JJ10", "yil_baslangic": 2007, "yil_bitis": 2014, "motor": "1.5", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37000-BR52A/37000-JD200", "sku": "2527", "urun_kodu": "2527"}, {"marka": "Nissan", "model": "NP300/Navara", "kasa": "D23", "yil_baslangic": 2014, "yil_bitis": 2017, "motor": "2.3", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37000-4KV1A", "sku": "2571", "urun_kodu": "2571"}, {"marka": "Nissan", "model": "NP300/Navara", "kasa": "D23", "yil_baslangic": 2014, "yil_bitis": 2017, "motor": "2.3", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37000-4KV1A", "sku": "2571", "urun_kodu": "2571"}, {"marka": "Nissan", "model": "NP300/Navara", "kasa": "D23", "yil_baslangic": 2014, "yil_bitis": 2017, "motor": "2.3", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "37000-4KV1A", "sku": "2571", "urun_kodu": "2571"}, {"marka": "Nissan", "model": "X-Trail", "kasa": "T32", "yil_baslangic": 2014, "yil_bitis": 2022, "motor": "1.6", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37000-4BD0A", "sku": "2575", "urun_kodu": "2575"}, {"marka": "Nissan", "model": "X-Trail", "kasa": "T32", "yil_baslangic": 2014, "yil_bitis": 2022, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37000-4BD0A", "sku": "2575", "urun_kodu": "2575"}, {"marka": "Nissan", "model": "X-Trail", "kasa": "T30/T31", "yil_baslangic": 2001, "yil_bitis": 2013, "motor": "2.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37000-8H310", "sku": "FZ008010202", "urun_kodu": "FZ.008010202"}, {"marka": "Nissan", "model": "X-Trail", "kasa": "T30/T31", "yil_baslangic": 2001, "yil_bitis": 2013, "motor": "2.2", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37000-8H310", "sku": "FZ008010202", "urun_kodu": "FZ.008010202"}, {"marka": "Nissan", "model": "X-Trail", "kasa": "T30/T31", "yil_baslangic": 2001, "yil_bitis": 2013, "motor": "2.5", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37000-8H310", "sku": "FZ008010202", "urun_kodu": "FZ.008010202"}, {"marka": "Opel", "model": "Mokka", "kasa": "—", "yil_baslangic": 2012, "yil_bitis": 2019, "motor": "1.4", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "22788958/22947024/42529901", "sku": "2522", "urun_kodu": "2522"}, {"marka": "Opel", "model": "Mokka", "kasa": "—", "yil_baslangic": 2012, "yil_bitis": 2019, "motor": "1.6", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "22788958/22947024/42529901", "sku": "2522", "urun_kodu": "2522"}, {"marka": "Opel", "model": "Insignia", "kasa": "—", "yil_baslangic": 2009, "yil_bitis": 2017, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "55560079", "sku": "2535", "urun_kodu": "2535"}, {"marka": "Opel", "model": "Insignia", "kasa": "—", "yil_baslangic": 2009, "yil_bitis": 2017, "motor": "2.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "55560079", "sku": "2535", "urun_kodu": "2535"}, {"marka": "Suzuki", "model": "SX4", "kasa": "—", "yil_baslangic": 2006, "yil_bitis": 2014, "motor": "1.6", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "2710061M00", "sku": "2520", "urun_kodu": "2520"}, {"marka": "Suzuki", "model": "SX4", "kasa": "—", "yil_baslangic": 2006, "yil_bitis": 2014, "motor": "1.6", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "2710061M00", "sku": "2520", "urun_kodu": "2520"}, {"marka": "Suzuki", "model": "Grand Vitara", "kasa": "—", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "1.9", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "2710167401", "sku": "5068", "urun_kodu": "5068"}, {"marka": "Suzuki", "model": "Grand Vitara", "kasa": "—", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "2.0", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "2710167401", "sku": "5068", "urun_kodu": "5068"}, {"marka": "Suzuki", "model": "Grand Vitara", "kasa": "—", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "2710167401", "sku": "5068", "urun_kodu": "5068"}, {"marka": "Suzuki", "model": "Grand Vitara", "kasa": "—", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "2.7", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "2710167401", "sku": "5068", "urun_kodu": "5068"}, {"marka": "Dacia", "model": "Duster", "kasa": "JFA", "yil_baslangic": 2010, "yil_bitis": 2024, "motor": "1.5", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "320003602R/370002820R", "sku": "2535", "urun_kodu": "2535"}, {"marka": "Dacia", "model": "Duster", "kasa": "JFA", "yil_baslangic": 2010, "yil_bitis": 2024, "motor": "1.6", "yakit": "Benzin", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "320003602R/370002820R", "sku": "2535", "urun_kodu": "2535"}, {"marka": "Dacia", "model": "Duster", "kasa": "JFA", "yil_baslangic": 2010, "yil_bitis": 2024, "motor": "1.5", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "320003602R/370002820R", "sku": "2535", "urun_kodu": "2535"}, {"marka": "Toyota", "model": "RAV4", "kasa": "XA30", "yil_baslangic": 2006, "yil_bitis": 2012, "motor": "2.0", "yakit": "Benzin", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37140-42030", "sku": "FZ006010102", "urun_kodu": "FZ.006010102"}, {"marka": "Toyota", "model": "RAV4", "kasa": "XA30", "yil_baslangic": 2006, "yil_bitis": 2012, "motor": "2.2", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37140-42030", "sku": "FZ006010102", "urun_kodu": "FZ.006010102"}, {"marka": "Toyota", "model": "RAV4", "kasa": "XA30", "yil_baslangic": 2006, "yil_bitis": 2012, "motor": "2.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37140-42030", "sku": "FZ006010102", "urun_kodu": "FZ.006010102"}, {"marka": "Toyota", "model": "Hilux", "kasa": "AN10/AN120", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "2.5", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37460-0K050", "sku": "FZ014010202", "urun_kodu": "FZ.014010202"}, {"marka": "Toyota", "model": "Hilux", "kasa": "AN10/AN120", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "3.0", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37460-0K050", "sku": "FZ014010202", "urun_kodu": "FZ.014010202"}, {"marka": "Toyota", "model": "Hilux", "kasa": "AN10/AN120", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "3.0", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "37460-0K050", "sku": "FZ014010202", "urun_kodu": "FZ.014010202"}, {"marka": "Toyota", "model": "Hilux", "kasa": "AN10/AN120", "yil_baslangic": 2005, "yil_bitis": 2015, "motor": "2.5", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Arazi", "oe_kodu": "37460-0K050", "sku": "FZ014010202", "urun_kodu": "FZ.014010202"}, {"marka": "Ford", "model": "Ranger", "kasa": "PX2", "yil_baslangic": 2015, "yil_bitis": 2019, "motor": "2.2", "yakit": "Dizel", "sanziman": "Manuel", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "KB3G-4K145-AF", "sku": "FZ019010502", "urun_kodu": "FZ.019010502"}, {"marka": "Ford", "model": "Ranger", "kasa": "PX2", "yil_baslangic": 2015, "yil_bitis": 2019, "motor": "2.2", "yakit": "Dizel", "sanziman": "Otomatik", "cekis": "AWD", "saft_tipi": "Standart", "oe_kodu": "KB3G-4K145-AF", "sku": "FZ019010502", "urun_kodu": "FZ.019010502"}];
+
+// Sayfa yüklendiğinde markaları doldur
+document.addEventListener('DOMContentLoaded', function() {
+    const markalar = [...new Set(saftDB.map(r => r.marka))].sort();
+    const select = document.getElementById('marka');
+    markalar.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = m;
+        select.appendChild(opt);
+    });
+});
+
+function onMarkaChange() {
+    const marka = document.getElementById('marka').value;
+    const modelSelect = document.getElementById('model');
+    const kasaSelect = document.getElementById('kasa');
+    const motorSelect = document.getElementById('motor');
+    
+    // Reset
+    modelSelect.innerHTML = '<option value="">-- Model Seçin --</option>';
+    kasaSelect.innerHTML = '<option value="">-- Önce model seçin --</option>';
+    motorSelect.innerHTML = '<option value="">-- Önce kasa seçin --</option>';
+    kasaSelect.disabled = true;
+    motorSelect.disabled = true;
+    document.getElementById('searchBtn').disabled = true;
+    hideResult();
+    
+    if (marka) {
+        const modeller = [...new Set(saftDB.filter(r => r.marka === marka).map(r => r.model))].sort();
+        modeller.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = m;
+            modelSelect.appendChild(opt);
+        });
+        modelSelect.disabled = false;
+        document.getElementById('step1-num').classList.add('done');
+    } else {
+        modelSelect.disabled = true;
+        document.getElementById('step1-num').classList.remove('done');
+    }
+    
+    document.getElementById('step2-num').classList.remove('done');
+    document.getElementById('step3-num').classList.remove('done');
+    document.getElementById('step4-num').classList.remove('done');
+}
+
+function onModelChange() {
+    const marka = document.getElementById('marka').value;
+    const model = document.getElementById('model').value;
+    const kasaSelect = document.getElementById('kasa');
+    const motorSelect = document.getElementById('motor');
+    
+    kasaSelect.innerHTML = '<option value="">-- Kasa / Yıl Seçin --</option>';
+    motorSelect.innerHTML = '<option value="">-- Önce kasa seçin --</option>';
+    motorSelect.disabled = true;
+    document.getElementById('searchBtn').disabled = true;
+    hideResult();
+    
+    if (model) {
+        const filtered = saftDB.filter(r => r.marka === marka && r.model === model);
+        const kasalar = [...new Set(filtered.map(r => `${r.kasa} (${r.yil_baslangic}-${r.yil_bitis})`))].sort();
+        kasalar.forEach(k => {
+            const opt = document.createElement('option');
+            opt.value = k;
+            opt.textContent = k;
+            kasaSelect.appendChild(opt);
+        });
+        kasaSelect.disabled = false;
+        document.getElementById('step2-num').classList.add('done');
+    } else {
+        kasaSelect.disabled = true;
+        document.getElementById('step2-num').classList.remove('done');
+    }
+    
+    document.getElementById('step3-num').classList.remove('done');
+    document.getElementById('step4-num').classList.remove('done');
+}
+
+function onKasaChange() {
+    const marka = document.getElementById('marka').value;
+    const model = document.getElementById('model').value;
+    const kasaFull = document.getElementById('kasa').value;
+    const motorSelect = document.getElementById('motor');
+    
+    motorSelect.innerHTML = '<option value="">-- Motor / Yakıt Seçin --</option>';
+    document.getElementById('searchBtn').disabled = true;
+    hideResult();
+    
+    if (kasaFull) {
+        // Kasa ve yıl bilgisini ayır
+        const kasaMatch = kasaFull.match(/^(.+) \((\d+)-(\d+)\)$/);
+        if (kasaMatch) {
+            const kasa = kasaMatch[1];
+            const yilBaslangic = parseInt(kasaMatch[2]);
+            const yilBitis = parseInt(kasaMatch[3]);
+            
+            const filtered = saftDB.filter(r => 
+                r.marka === marka && 
+                r.model === model && 
+                r.kasa === kasa &&
+                r.yil_baslangic === yilBaslangic &&
+                r.yil_bitis === yilBitis
+            );
+            
+            const motorlar = [...new Set(filtered.map(r => `${r.motor}L ${r.yakit} - ${r.sanziman}`))].sort();
+            motorlar.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = m;
+                motorSelect.appendChild(opt);
+            });
+            motorSelect.disabled = false;
+            document.getElementById('step3-num').classList.add('done');
+        }
+    } else {
+        motorSelect.disabled = true;
+        document.getElementById('step3-num').classList.remove('done');
+    }
+    
+    document.getElementById('step4-num').classList.remove('done');
+}
+
+function onMotorChange() {
+    const motor = document.getElementById('motor').value;
+    if (motor) {
+        document.getElementById('searchBtn').disabled = false;
+        document.getElementById('step4-num').classList.add('done');
+    } else {
+        document.getElementById('searchBtn').disabled = true;
+        document.getElementById('step4-num').classList.remove('done');
+    }
+    hideResult();
+}
+
+function search() {
+    const marka = document.getElementById('marka').value;
+    const model = document.getElementById('model').value;
+    const kasaFull = document.getElementById('kasa').value;
+    const motorFull = document.getElementById('motor').value;
+    
+    // Parse kasa
+    const kasaMatch = kasaFull.match(/^(.+) \((\d+)-(\d+)\)$/);
+    const kasa = kasaMatch[1];
+    const yilBaslangic = parseInt(kasaMatch[2]);
+    const yilBitis = parseInt(kasaMatch[3]);
+    
+    // Parse motor
+    const motorMatch = motorFull.match(/^(.+)L (.+) - (.+)$/);
+    const motorHacmi = motorMatch[1];
+    const yakit = motorMatch[2];
+    const sanziman = motorMatch[3];
+    
+    // Ara
+    const result = saftDB.find(r =>
+        r.marka === marka &&
+        r.model === model &&
+        r.kasa === kasa &&
+        r.yil_baslangic === yilBaslangic &&
+        r.yil_bitis === yilBitis &&
+        r.motor === motorHacmi &&
+        r.yakit === yakit &&
+        r.sanziman === sanziman
+    );
+    
+    showResult(result, { marka, model, kasa, yilBaslangic, yilBitis, motorHacmi, yakit, sanziman });
+}
+
+function showResult(result, query) {
+    const box = document.getElementById('resultBox');
+    
+    if (result) {
+        box.className = 'result-box found';
+        box.innerHTML = `
+            <div class="result-title">✅ Şaft Bulundu!</div>
+            <div class="result-details">
+                <div class="result-item">
+                    <label>Araç</label>
+                    <span>${result.marka} ${result.model}</span>
+                </div>
+                <div class="result-item">
+                    <label>Kasa / Yıl</label>
+                    <span>${result.kasa} (${result.yil_baslangic}-${result.yil_bitis})</span>
+                </div>
+                <div class="result-item">
+                    <label>Motor</label>
+                    <span>${result.motor}L ${result.yakit}</span>
+                </div>
+                <div class="result-item">
+                    <label>Şanzıman / Çekiş</label>
+                    <span>${result.sanziman} / ${result.cekis}</span>
+                </div>
+                <div class="result-item full oe">
+                    <label>OE Kodu (Orijinal Parça No)</label>
+                    <span>${result.oe_kodu}</span>
+                </div>
+                <div class="result-item">
+                    <label>Şaft Tipi</label>
+                    <span>${result.saft_tipi}</span>
+                </div>
+                <div class="result-item">
+                    <label>Ürün Kodu</label>
+                    <span>${result.urun_kodu}</span>
+                </div>
+            </div>
+            <div class="contact-buttons">
+                <a href="https://wa.me/905XXXXXXXXX?text=Merhaba, ${result.marka} ${result.model} ${result.kasa} için şaft sormak istiyorum. OE: ${result.oe_kodu}" class="contact-btn btn-whatsapp" target="_blank">
+                    📱 WhatsApp ile Sor
+                </a>
+                <a href="tel:+905XXXXXXXXX" class="contact-btn btn-phone">
+                    📞 Hemen Ara
+                </a>
+            </div>
+            <button class="reset-btn" onclick="resetForm()">🔄 Yeni Arama Yap</button>
+        `;
+    } else {
+        box.className = 'result-box not-found';
+        box.innerHTML = `
+            <div class="result-title">⚠️ Kayıt Bulunamadı</div>
+            <p style="color: #856404; margin-bottom: 15px;">
+                <strong>${query.marka} ${query.model}</strong> için aradığınız şaft veritabanımızda yok.<br>
+                Endişelenmeyin! Bize ulaşın, sizin için temin edelim.
+            </p>
+            <div class="contact-buttons">
+                <a href="https://wa.me/905XXXXXXXXX?text=Merhaba, ${query.marka} ${query.model} ${query.kasa} (${query.yilBaslangic}-${query.yilBitis}) ${query.motorHacmi}L ${query.yakit} için şaft arıyorum." class="contact-btn btn-whatsapp" target="_blank">
+                    📱 WhatsApp ile Sor
+                </a>
+                <a href="tel:+905XXXXXXXXX" class="contact-btn btn-phone">
+                    📞 Hemen Ara
+                </a>
+            </div>
+            <button class="reset-btn" onclick="resetForm()">🔄 Yeni Arama Yap</button>
+        `;
+    }
+}
+
+function hideResult() {
+    document.getElementById('resultBox').className = 'result-box';
+    document.getElementById('resultBox').innerHTML = '';
+}
+
+function resetForm() {
+    document.getElementById('marka').value = '';
+    document.getElementById('model').innerHTML = '<option value="">-- Önce marka seçin --</option>';
+    document.getElementById('kasa').innerHTML = '<option value="">-- Önce model seçin --</option>';
+    document.getElementById('motor').innerHTML = '<option value="">-- Önce kasa seçin --</option>';
+    document.getElementById('model').disabled = true;
+    document.getElementById('kasa').disabled = true;
+    document.getElementById('motor').disabled = true;
+    document.getElementById('searchBtn').disabled = true;
+    document.querySelectorAll('.step-number').forEach(el => el.classList.remove('done'));
+    hideResult();
+}
+</script>
+</body>
+</html>
