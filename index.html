@@ -283,7 +283,7 @@
     <div class="container">
         <div class="header">
             <h1>🔧 Şaft Bulucu</h1>
-            <p>Aracınıza uygun şaftı 4 adımda bulun</p>
+            <p>Aracınıza uygun şaftı 3 adımda bulun</p>
         </div>
         
         <div class="finder-box">
@@ -314,16 +314,6 @@
                 </div>
                 <select id="kasa" onchange="onKasaChange()" disabled>
                     <option value="">-- Önce model seçin --</option>
-                </select>
-            </div>
-            
-            <div class="step">
-                <div class="step-label">
-                    <span class="step-number" id="step4-num">4</span>
-                    <span class="step-title">Motor / Yakıt Seçin</span>
-                </div>
-                <select id="motor" onchange="onMotorChange()" disabled>
-                    <option value="">-- Önce kasa seçin --</option>
                 </select>
             </div>
             
@@ -361,14 +351,10 @@ function onMarkaChange() {
     const marka = document.getElementById('marka').value;
     const modelSelect = document.getElementById('model');
     const kasaSelect = document.getElementById('kasa');
-    const motorSelect = document.getElementById('motor');
     
-    // Reset
     modelSelect.innerHTML = '<option value="">-- Model Seçin --</option>';
     kasaSelect.innerHTML = '<option value="">-- Önce model seçin --</option>';
-    motorSelect.innerHTML = '<option value="">-- Önce kasa seçin --</option>';
     kasaSelect.disabled = true;
-    motorSelect.disabled = true;
     document.getElementById('searchBtn').disabled = true;
     hideResult();
     
@@ -389,18 +375,14 @@ function onMarkaChange() {
     
     document.getElementById('step2-num').classList.remove('done');
     document.getElementById('step3-num').classList.remove('done');
-    document.getElementById('step4-num').classList.remove('done');
 }
 
 function onModelChange() {
     const marka = document.getElementById('marka').value;
     const model = document.getElementById('model').value;
     const kasaSelect = document.getElementById('kasa');
-    const motorSelect = document.getElementById('motor');
     
     kasaSelect.innerHTML = '<option value="">-- Kasa / Yıl Seçin --</option>';
-    motorSelect.innerHTML = '<option value="">-- Önce kasa seçin --</option>';
-    motorSelect.disabled = true;
     document.getElementById('searchBtn').disabled = true;
     hideResult();
     
@@ -421,70 +403,24 @@ function onModelChange() {
     }
     
     document.getElementById('step3-num').classList.remove('done');
-    document.getElementById('step4-num').classList.remove('done');
 }
 
 function onKasaChange() {
-    const marka = document.getElementById('marka').value;
-    const model = document.getElementById('model').value;
-    const kasaFull = document.getElementById('kasa').value;
-    const motorSelect = document.getElementById('motor');
-    
-    motorSelect.innerHTML = '<option value="">-- Motor / Yakıt Seçin --</option>';
-    document.getElementById('searchBtn').disabled = true;
-    hideResult();
-    
-    if (kasaFull) {
-        // Kasa ve yıl bilgisini ayır
-        const kasaMatch = kasaFull.match(/^(.+) \((\d+)-(\d+)\)$/);
-        if (kasaMatch) {
-            const kasa = kasaMatch[1];
-            const yilBaslangic = parseInt(kasaMatch[2]);
-            const yilBitis = parseInt(kasaMatch[3]);
-            
-            const filtered = saftDB.filter(r => 
-                r.marka === marka && 
-                r.model === model && 
-                r.kasa === kasa &&
-                r.yil_baslangic === yilBaslangic &&
-                r.yil_bitis === yilBitis
-            );
-            
-            const motorlar = [...new Set(filtered.map(r => `${r.motor}L ${r.yakit} - ${r.sanziman}`))].sort();
-            motorlar.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m;
-                opt.textContent = m;
-                motorSelect.appendChild(opt);
-            });
-            motorSelect.disabled = false;
-            document.getElementById('step3-num').classList.add('done');
-        }
+    const kasa = document.getElementById('kasa').value;
+    document.getElementById('searchBtn').disabled = !kasa;
+    if (kasa) {
+        document.getElementById('step3-num').classList.add('done');
     } else {
-        motorSelect.disabled = true;
         document.getElementById('step3-num').classList.remove('done');
     }
-    
-    document.getElementById('step4-num').classList.remove('done');
-}
-
-function onMotorChange() {
-    const motor = document.getElementById('motor').value;
-    if (motor) {
-        document.getElementById('searchBtn').disabled = false;
-        document.getElementById('step4-num').classList.add('done');
-    } else {
-        document.getElementById('searchBtn').disabled = true;
-        document.getElementById('step4-num').classList.remove('done');
-    }
     hideResult();
 }
+
 
 function search() {
     const marka = document.getElementById('marka').value;
     const model = document.getElementById('model').value;
     const kasaFull = document.getElementById('kasa').value;
-    const motorFull = document.getElementById('motor').value;
     
     // Parse kasa
     const kasaMatch = kasaFull.match(/^(.+) \((\d+)-(\d+)\)$/);
@@ -492,31 +428,38 @@ function search() {
     const yilBaslangic = parseInt(kasaMatch[2]);
     const yilBitis = parseInt(kasaMatch[3]);
     
-    // Parse motor
-    const motorMatch = motorFull.match(/^(.+)L (.+) - (.+)$/);
-    const motorHacmi = motorMatch[1];
-    const yakit = motorMatch[2];
-    const sanziman = motorMatch[3];
-    
-    // Ara
-    const result = saftDB.find(r =>
+    // Motor/şanzıman olmadan tüm eşleşen kayıtları bul
+    const results = saftDB.filter(r =>
         r.marka === marka &&
         r.model === model &&
         r.kasa === kasa &&
         r.yil_baslangic === yilBaslangic &&
-        r.yil_bitis === yilBitis &&
-        r.motor === motorHacmi &&
-        r.yakit === yakit &&
-        r.sanziman === sanziman
+        r.yil_bitis === yilBitis
     );
+
+    // Benzersiz OE kodlarını topla
+    const uniqueOE = [...new Set(results.map(r => r.oe_kodu))];
+    const firstResult = results[0];
     
-    showResult(result, { marka, model, kasa, yilBaslangic, yilBitis, motorHacmi, yakit, sanziman });
+    showResult(firstResult, uniqueOE, { marka, model, kasa, yilBaslangic, yilBitis });
 }
 
-function showResult(result, query) {
+function showResult(result, uniqueOE, query) {
     const box = document.getElementById('resultBox');
     
+    const uyariNotu = `
+        <div style="background:#fff8e1;border:1.5px solid #f39c12;border-radius:8px;padding:12px 15px;margin-top:16px;display:flex;gap:10px;align-items:flex-start;">
+            <span style="font-size:18px;flex-shrink:0;">⚠️</span>
+            <span style="color:#7d5a00;font-size:14px;line-height:1.5;">
+                <strong>Lütfen dikkat:</strong> Aynı araçta motor ve şanzıman tipine göre şaft farklılık gösterebilir. Sipariş vermeden önce lütfen bize danışın.
+            </span>
+        </div>`;
+    
     if (result) {
+        const oeHTML = uniqueOE.length > 1
+            ? uniqueOE.map(oe => `<span style="display:block;">${oe}</span>`).join('')
+            : uniqueOE[0];
+
         box.className = 'result-box found';
         box.innerHTML = `
             <div class="result-title">✅ Şaft Bulundu!</div>
@@ -529,32 +472,22 @@ function showResult(result, query) {
                     <label>Kasa / Yıl</label>
                     <span>${result.kasa} (${result.yil_baslangic}-${result.yil_bitis})</span>
                 </div>
-                <div class="result-item">
-                    <label>Motor</label>
-                    <span>${result.motor}L ${result.yakit}</span>
-                </div>
-                <div class="result-item">
-                    <label>Şanzıman / Çekiş</label>
-                    <span>${result.sanziman} / ${result.cekis}</span>
-                </div>
                 <div class="result-item full oe">
                     <label>OE Kodu (Orijinal Parça No)</label>
-                    <span>${result.oe_kodu}</span>
+                    <span>${oeHTML}</span>
                 </div>
                 <div class="result-item">
                     <label>Şaft Tipi</label>
                     <span>${result.saft_tipi}</span>
                 </div>
-                <div class="result-item">
-                    <label>Ürün Kodu</label>
-                    <span>${result.urun_kodu}</span>
-                </div>
+
             </div>
+            ${uyariNotu}
             <div class="contact-buttons">
-                <a href="https://wa.me/905XXXXXXXXX?text=Merhaba, ${result.marka} ${result.model} ${result.kasa} için şaft sormak istiyorum. OE: ${result.oe_kodu}" class="contact-btn btn-whatsapp" target="_blank">
+                <a href="https://wa.me/905379234959?text=Merhaba, ${result.marka} ${result.model} ${result.kasa} için şaft sormak istiyorum. OE: ${uniqueOE.join(' / ')}" class="contact-btn btn-whatsapp" target="_blank">
                     📱 WhatsApp ile Sor
                 </a>
-                <a href="tel:+905XXXXXXXXX" class="contact-btn btn-phone">
+                <a href="tel:+905327025364" class="contact-btn btn-phone">
                     📞 Hemen Ara
                 </a>
             </div>
@@ -569,10 +502,10 @@ function showResult(result, query) {
                 Endişelenmeyin! Bize ulaşın, sizin için temin edelim.
             </p>
             <div class="contact-buttons">
-                <a href="https://wa.me/905XXXXXXXXX?text=Merhaba, ${query.marka} ${query.model} ${query.kasa} (${query.yilBaslangic}-${query.yilBitis}) ${query.motorHacmi}L ${query.yakit} için şaft arıyorum." class="contact-btn btn-whatsapp" target="_blank">
+                <a href="https://wa.me/905379234959?text=Merhaba, ${query.marka} ${query.model} ${query.kasa} (${query.yilBaslangic}-${query.yilBitis}) için şaft arıyorum." class="contact-btn btn-whatsapp" target="_blank">
                     📱 WhatsApp ile Sor
                 </a>
-                <a href="tel:+905XXXXXXXXX" class="contact-btn btn-phone">
+                <a href="tel:+905327025364" class="contact-btn btn-phone">
                     📞 Hemen Ara
                 </a>
             </div>
@@ -590,10 +523,8 @@ function resetForm() {
     document.getElementById('marka').value = '';
     document.getElementById('model').innerHTML = '<option value="">-- Önce marka seçin --</option>';
     document.getElementById('kasa').innerHTML = '<option value="">-- Önce model seçin --</option>';
-    document.getElementById('motor').innerHTML = '<option value="">-- Önce kasa seçin --</option>';
     document.getElementById('model').disabled = true;
     document.getElementById('kasa').disabled = true;
-    document.getElementById('motor').disabled = true;
     document.getElementById('searchBtn').disabled = true;
     document.querySelectorAll('.step-number').forEach(el => el.classList.remove('done'));
     hideResult();
